@@ -5,6 +5,7 @@ import com.gestion.empleados.models.Empleado;
 import com.gestion.empleados.models.Falta;
 import com.gestion.empleados.services.EmpleadoService;
 import com.gestion.empleados.services.FaltaService;
+import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
@@ -41,6 +42,31 @@ public class FaltaController {
         return new ResponseEntity<>(faltaService.save(falta), HttpStatus.CREATED);
     }   
     
+    @PostMapping("/faltas")
+  public ResponseEntity<String> guardarFaltaConArchivo(@RequestParam("file") MultipartFile file, @RequestParam("falta") Falta falta) {
+    if (file.isEmpty()) {
+      return ResponseEntity.badRequest().body("No se ha proporcionado ningún archivo");
+    }
+
+    try {
+      String fileName = falta.getEmpleado() + "_" + file.getOriginalFilename();
+      String filePath = "C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + File.separator + fileName;
+      File destFile = new File(filePath);
+
+      // Guardar el archivo en la ubicación deseada
+      file.transferTo(destFile);
+
+      // Asignar la ruta del archivo a la falta
+      falta.setUrlArchivo(filePath);
+
+      // Guardar la falta en la base de datos utilizando tu servicio faltaService
+      faltaService.save(falta);
+
+      return ResponseEntity.ok("Falta y archivo guardados correctamente");
+    } catch (IOException e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al guardar el archivo");
+    }
+  }
 
 
     
