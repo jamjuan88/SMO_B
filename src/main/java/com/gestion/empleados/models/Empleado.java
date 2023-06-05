@@ -58,8 +58,10 @@ public class Empleado {
     @Column(name="fechaIngreso", length = 255, nullable = false)
     private LocalDate fechaIngreso;
     
-    @Column(name="tipoPersona", length = 12, nullable = false)
-    private String tipoPersona;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
+    @JoinColumn(name="categoria")
+    private Categoria categoria;
     
     private String fotoPerfil;
     
@@ -175,14 +177,15 @@ public class Empleado {
         this.fechaIngreso = fechaIngreso;
     }
 
-    public String getTipoPersona() {
-        return tipoPersona;
+    public Categoria getCategoria() {
+        return categoria;
     }
 
-    public void setTipoPersona(String tipoPersona) {
-        this.tipoPersona = tipoPersona;
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 
+   
     public String getFotoPerfil() {
         return fotoPerfil;
     }

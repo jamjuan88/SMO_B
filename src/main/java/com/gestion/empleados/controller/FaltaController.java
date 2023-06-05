@@ -7,7 +7,10 @@ import com.gestion.empleados.services.EmpleadoService;
 import com.gestion.empleados.services.FaltaService;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Base64;
+import org.apache.commons.io.FilenameUtils;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -24,6 +27,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/faltas")
@@ -42,33 +50,47 @@ public class FaltaController {
         return new ResponseEntity<>(faltaService.save(falta), HttpStatus.CREATED);
     }   
     
-    @PostMapping("/faltas")
-  public ResponseEntity<String> guardarFaltaConArchivo(@RequestParam("file") MultipartFile file, @RequestParam("falta") Falta falta) {
-    if (file.isEmpty()) {
-      return ResponseEntity.badRequest().body("No se ha proporcionado ningún archivo");
-    }
+    @PostMapping("/upload2")
+public ResponseEntity<String> guardarFaltaConArchivo(
+        @RequestParam("archivo") MultipartFile archivo,
+        @RequestParam("faltaId") Long idFalta,
+        @RequestParam("nombreArchivo") String nombreArchivo,
+        @RequestParam("extensionArchivo") String extensionArchivo) {
+
+    // Obtener la falta correspondiente a faltaId desde la base de datos
+    Falta falta = faltaService.findById(idFalta);
+
+    // Obtener el ID del empleado a partir del ID de la falta
+    Long empleadoId = falta.getEmpleado().getId();
+
+      // Construir el nuevo nombre del archivo con la extensión
+    String nuevoNombreArchivo = nombreArchivo + "." + extensionArchivo;
+
+    // Construir la ruta de almacenamiento del archivo
+    String rutaBase = "C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/";
+    String rutaEmpleado = rutaBase + empleadoId + "/";
+    String rutaFalta = rutaEmpleado + idFalta + "/";
+    String rutaArchivo = rutaFalta + nuevoNombreArchivo;
 
     try {
-      String fileName = falta.getEmpleado() + "_" + file.getOriginalFilename();
-      String filePath = "C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + File.separator + fileName;
-      File destFile = new File(filePath);
+        // Crear las carpetas si no existen
+        Files.createDirectories(Paths.get(rutaFalta));
 
-      // Guardar el archivo en la ubicación deseada
-      file.transferTo(destFile);
+        // Guardar el archivo en la ruta especificada
+        archivo.transferTo(new File(rutaArchivo));
 
-      // Asignar la ruta del archivo a la falta
-      falta.setUrlArchivo(filePath);
+        // Almacenar la ruta del archivo en la falta correspondiente
+        falta.setUrlArchivo(rutaArchivo);
+        faltaService.save(falta);
 
-      // Guardar la falta en la base de datos utilizando tu servicio faltaService
-      faltaService.save(falta);
-
-      return ResponseEntity.ok("Falta y archivo guardados correctamente");
+        return ResponseEntity.ok("Archivo subido correctamente");
     } catch (IOException e) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al guardar el archivo");
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir el archivo");
     }
-  }
+}
 
-
+   
     
     //Metodo para mostrar todas las faltas
     @GetMapping
@@ -77,9 +99,9 @@ public class FaltaController {
     }
     
      //metodo para buscar un emppresa por id  
-    @GetMapping("/{id}")
-    public ResponseEntity<Falta> obtenerFaltaPorID(@PathVariable Long id){
-        Falta falta = faltaService.findById(id);                            
+    @GetMapping("/{idFalta}")
+    public ResponseEntity<Falta> obtenerFaltaPorID(@PathVariable Long idFalta){
+        Falta falta = faltaService.findById(idFalta);                            
         return ResponseEntity.ok(falta);
     }
     
@@ -101,9 +123,9 @@ public class FaltaController {
     }
         
           //metodo para actualizar datos de una falta
-    @PutMapping("/{id}")
-    public ResponseEntity<Falta> actualizarFalta(@PathVariable Long id,@RequestBody Falta falta){
-        Falta faltaEncontrada = faltaService.findById(id);
+    @PutMapping("/{idFalta}")
+    public ResponseEntity<Falta> actualizarFalta(@PathVariable Long idFalta,@RequestBody Falta falta){
+        Falta faltaEncontrada = faltaService.findById(idFalta);
                             
         if(faltaEncontrada == null){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -121,10 +143,5 @@ public class FaltaController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
-    
-   
-    
-    
-    
+        
 }

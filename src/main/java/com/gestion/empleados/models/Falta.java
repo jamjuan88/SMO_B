@@ -38,11 +38,11 @@ public class Falta {
     @JoinColumn(name = "empleadoId")
     private Empleado empleado;
    
-    public Long getId() {
+    public Long getIdFalta() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setIdFalta(Long id) {
         this.id = id;
     }
 

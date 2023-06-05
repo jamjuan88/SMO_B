@@ -89,7 +89,7 @@ public class EmpleadoController {
             empleadoEncontrado.setDireccion(empleado.getDireccion());
             empleadoEncontrado.setGenero(empleado.getGenero());
             empleadoEncontrado.setAntecedentes(empleado.getAntecedentes());
-            empleadoEncontrado.setTipoPersona(empleado.getTipoPersona());
+            empleadoEncontrado.setCategoria(empleado.getCategoria());
             empleadoEncontrado.setFotoPerfil(empleado.getFotoPerfil());
             empleadoEncontrado.setEmpresa(empleado.getEmpresa());
             empleadoEncontrado.setPuesto(empleado.getPuesto());
@@ -114,12 +114,14 @@ public class EmpleadoController {
          //METODOS PARA LOS ARCHIVOS
     @PostMapping("/empleados/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,
-            @RequestParam("employeeId") String employeeId,
-            @RequestParam("fileName") String fileName) {
-        File targetFile = new File("C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + employeeId + "/" + fileName);
+             @RequestParam("employeeId") String employeeId,
+             @RequestParam("fileName") String fileName){
+        
+        File targetFile = new File("C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + employeeId + "/otrosDoc/" + fileName);
         targetFile.getParentFile().mkdirs();
         try {
             file.transferTo(targetFile);
+                 
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -132,7 +134,7 @@ public class EmpleadoController {
     @DeleteMapping("/empleados/files/{employeeId}/{fileName}")
     public ResponseEntity<String> deleteFile(@PathVariable String employeeId, @PathVariable String fileName) {
     try {
-      File targetFile = new File("C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + employeeId + "/" + fileName);
+      File targetFile = new File("C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + employeeId + "/otrosDoc/" + fileName);
       targetFile.delete();
       return ResponseEntity.ok("Archivo eliminado correctamente");
     } catch (Exception e) {
@@ -143,7 +145,7 @@ public class EmpleadoController {
 
       @GetMapping("/empleados/files/{employeeId}")
          public List<String> getEmployeeFiles(@PathVariable String employeeId) {
-         File employeeDir = new File("C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + employeeId);
+         File employeeDir = new File("C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + employeeId + "/otrosDoc/");
          String[] files = employeeDir.list();
          return Arrays.asList(files);
 }
@@ -151,7 +153,7 @@ public class EmpleadoController {
 
     @GetMapping("/empleados/files/{employeeId}/{fileName}")
       public ResponseEntity<Resource> getFile(@PathVariable String employeeId, @PathVariable String fileName) {
-      File file = new File("C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + employeeId + "/" + fileName);
+      File file = new File("C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + employeeId + "/otrosDoc/" + fileName);
       HttpHeaders headers = new HttpHeaders();
       headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + fileName);
        if (fileName.endsWith(".pdf")) {
@@ -164,7 +166,29 @@ public class EmpleadoController {
             .headers(headers)
             .contentType(MediaType.APPLICATION_OCTET_STREAM)
             .body(resource);
-     }
-
-        
+     }        
+      
+@GetMapping("/empleados/archivosFalta/{employeeId}/{idFalta}/{nombreArch}")
+public ResponseEntity<Resource> getFile2(@PathVariable String employeeId, @PathVariable Number idFalta ,@PathVariable String nombreArch) {
+  File file = new File("C:/Users/Usuario/Desktop/SistemaSMO/com.smo.spring/uploads/" + employeeId + "/" + idFalta + "/" + nombreArch);
+  HttpHeaders headers = new HttpHeaders();
+  headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=" + nombreArch);
+  if (nombreArch.endsWith(".pdf")) {
+    headers.setContentType(MediaType.APPLICATION_PDF);
+  } else if (nombreArch.endsWith(".jpg")) {
+    headers.setContentType(MediaType.IMAGE_JPEG);
+  }
+  Resource resource = new FileSystemResource(file);
+  return ResponseEntity.ok()
+        .headers(headers)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+        .body(resource);
 }
+
+       
+}
+      
+      
+
+
+    
