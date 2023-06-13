@@ -67,7 +67,7 @@ public class ProveedorAptitudesController {
     
     //metodo sirve para eliminar un proveedor
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarAptitud(@PathVariable Long id) {
+    public ResponseEntity<?> eliminarProveedorAptitud(@PathVariable Long id) {
         ProveedoresAptitudService.delete(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }

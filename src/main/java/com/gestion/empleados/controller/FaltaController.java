@@ -51,7 +51,7 @@ public class FaltaController {
     }   
     
     @PostMapping("/upload2")
-public ResponseEntity<String> guardarFaltaConArchivo(
+    public ResponseEntity<String> guardarFaltaConArchivo(
         @RequestParam("archivo") MultipartFile archivo,
         @RequestParam("faltaId") Long idFalta,
         @RequestParam("nombreArchivo") String nombreArchivo,
